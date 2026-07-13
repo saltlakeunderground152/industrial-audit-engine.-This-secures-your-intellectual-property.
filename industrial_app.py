@@ -206,9 +206,12 @@ def run_cli():
             db.commit()
             print(f"✅ Contractor payout release successfully signed and forced for audit verification block {sys.argv[2]}.")
     db.close()
-
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] in ["list", "inspect", "release_payout"]:
         run_cli()
-
+    else:
+        import os
+        import uvicorn
+        port = int(os.environ.get("PORT", 8000))
+        uvicorn.run("industrial_app:app", host="0.0.0.0", port=port)
 
