@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Operations Command Dashboard</title>
+    <!-- Tailwind CSS for Enterprise UI Componentry -->
+    <script src="https://tailwindcss.com"></script>
+    <!-- Chart.js for Executive Metrics -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased">
+
+    <!-- Top Navigation Bar -->
+    <nav class="border-b border-slate-800 bg-slate-950 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span class="font-bold tracking-wider text-sm uppercase text-slate-400">Compliance Core v1.0</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-xs bg-slate-800 px-3 py-1 rounded text-slate-400 font-mono">Tenant ID: Active_Session</span>
+            <button class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded transition">Export Audit CSV</button>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Container -->
+    <main class="p-6 max-w-7xl mx-auto space-y-6">
+        
+        <!-- Executive Summary Cards -->
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-slate-950 border border-slate-800 p-6 rounded-lg">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Infrastructure Audits</p>
+                <p id="metric-total" class="text-3xl font-bold mt-2 text-white">0</p>
+            </div>
+            <div class="bg-slate-950 border border-slate-800 p-6 rounded-lg">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Critical Failures Flagged</p>
+                <p id="metric-failed" class="text-3xl font-bold mt-2 text-rose-500">0</p>
+            </div>
+            <div class="bg-slate-950 border border-slate-800 p-6 rounded-lg">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">System Compliance Rating</p>
+                <p id="metric-rate" class="text-3xl font-bold mt-2 text-emerald-400">100%</p>
+            </div>
+        </section>
+
+        <!-- Visualization and Ledger Split -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Analytics Chart -->
+            <div class="lg:col-span-1 bg-slate-950 border border-slate-800 p-6 rounded-lg flex flex-col justify-between">
+                <h3 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">Asset Distribution</h3>
+                <div class="relative w-full aspect-square">
+                    <canvas id="complianceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Live Compliance Log Ledger -->
+            <div class="lg:col-span-2 bg-slate-950 border border-slate-800 rounded-lg flex flex-col">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="text-sm font-semibold text-slate-300 uppercase tracking-wider">Real-Time Ledger Stream</h3>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-200">Live API Polling</span>
+                </div>
+                <div class="overflow-x-auto flex-grow max-h-[380px] overflow-y-auto">
+                    <table class="w-full text-left text-sm text-slate-400">
+                        <thead class="text-xs uppercase bg-slate-900 text-slate-500 sticky top-0">
+                            <tr>
+                                <th class="px-6 py-3">Timestamp</th>
+                                <th class="px-6 py-3">Asset Type</th>
+                                <th class="px-6 py-3">Coordinates</th>
+                                <th class="px-6 py-3">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ledger-rows">
+                            <!-- Dynamic rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Dashboard Controller Logic -->
+    <script>
+        // Configuration: Point this directly to your live background engine URL
+        const API_ENDPOINT = "https://onrender.com"; 
+
+        // Initial Data Structure for demonstration and fallback rendering
+        let mockData = [
+            { created_at: new Date().toISOString(), asset_type: "telecom_tower", spatial_coordinates: "(40.7128, -74.0060)", compliance_status: "passed" },
+            { created_at: new Date().toISOString(), asset_type: "utility_pole", spatial_coordinates: "(34.0522, -118.2437)", compliance_status: "failed_critical" }
+        ];
+
+        function updateUI(data) {
+            const tbody = document.getElementById('ledger-rows');
+            tbody.innerHTML = '';
+            
+            let total = data.length;
+            let failed = data.filter(item => item.compliance_status === 'failed_critical').length;
+            let passRate = total > 0 ? Math.round(((total - failed) / total) * 100) : 100;
+
+            document.getElementById('metric-total').innerText = total;
+            document.getElementById('metric-failed').innerText = failed;
+            document.getElementById('metric-rate').innerText = `${passRate}%`;
+
+            data.forEach(log => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-slate-900 hover:bg-slate-900/50 transition";
+                
+                const statusBadge = log.compliance_status === 'passed' 
+                    ? `<span class="text-emerald-400 bg-emerald-950/50 px-2 py-1 rounded text-xs font-mono font-semibold">PASSED</span>`
+                    : `<span class="text-rose-400 bg-rose-950/50 px-2 py-1 rounded text-xs font-mono font-semibold">CRITICAL_FAIL</span>`;
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-xs font-mono">${new Date(log.created_at).toLocaleTimeString()}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-200">${log.asset_type}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs font-mono text-slate-500">${log.spatial_coordinates}</td>
+                    <td class="px-6 py-4 whitespace-nowrap">${statusBadge}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Render Analytics Visual Component
+        const ctx = document.getElementById('complianceChart').getContext('2d');
+        const complianceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Passed', 'Critical Failures'],
+                datasets: [{
+                    data:,
+                    backgroundColor: ['#10b981', '#f43f5e'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+
+        // Initialize and simulate incoming server stream
+        updateUI(mockData);
+    </script>
+</body>
+</html>
