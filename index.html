@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Audit Portal</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f0f4f8; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; box-sizing: border-box; }
+        .card { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 400px; }
+        h2 { margin: 0 0 8px 0; color: #1e293b; font-size: 22px; text-align: center; }
+        p { margin: 0 0 24px 0; color: #64748b; font-size: 14px; text-align: center; }
+        label { display: block; margin: 14px 0 6px; font-weight: 600; color: #334155; font-size: 14px; }
+        input, select { width: 100%; padding: 12px; border: 1.5px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #f8fafc; transition: border 0.2s; }
+        input:focus, select:focus { outline: none; border-color: #2563eb; background: white; }
+        button { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; margin-top: 24px; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.2); }
+        button:active { transform: scale(0.98); }
+        #status { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; font-weight: 500; text-align: center; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Industrial Audit Portal</h2>
+    <p>B2B Infrastructure Engine Compliance Gating</p>
+    <form id="auditForm">
+        <label>Technician ID</label>
+        <input type="text" id="techId" value="TECH-MARK-881" required>
+
+        <label>Facility Type</label>
+        <select id="facilityType">
+            <option value="CELL_TOWER">Cell Tower</option>
+            <option value="FIBER_NODE">Fiber Node</option>
+            <option value="DATA_CENTER">Data Center</option>
+        </select>
+
+        <label>Latitude</label>
+        <input type="number" id="lat" value="-90" step="any" required>
+
+        <label>Longitude</label>
+        <input type="number" id="lng" value="-180" step="any" required>
+
+        <label>Spatial File Link (.KMZ)</label>
+        <input type="url" id="spatialUrl" value="https://google.com" required>
+
+        <button type="submit">Submit Field Audit</button>
+    </form>
+    <div id="status"></div>
+</div>
+
+<script>
+document.getElementById('auditForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const statusDiv = document.getElementById('status');
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = '#f1f5f9';
+    statusDiv.style.color = '#334155';
+    statusDiv.innerText = 'Connecting to backend engine...';
+
+    const payload = {
+        technician_id: document.getElementById('techId').value,
+        facility_type: document.getElementById('facilityType').value,
+        latitude: parseFloat(document.getElementById('lat').value),
+        longitude: parseFloat(document.getElementById('lng').value),
+        spatial_file_url: document.getElementById('spatialUrl').value
+    };
+
+    try {
+        const response = await fetch('https://onrender.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            statusDiv.style.background = '#dcfce7';
+            statusDiv.style.color = '#15803d';
+            statusDiv.innerText = '🎉 Audit Submitted Successfully! (Code 202)';
+        } else {
+            const errData = await response.json();
+            statusDiv.style.background = '#fee2e2';
+            statusDiv.style.color = '#b91c1c';
+            statusDiv.innerText = `Rejected: ${errData.detail || 'Invalid Spatial Format'}`;
+        }
+    } catch (err) {
+        statusDiv.style.background = '#fee2e2';
+        statusDiv.style.color = '#b91c1c';
+        statusDiv.innerText = 'Network error connecting to backend.';
+    }
+});
+</script>
+
+</body>
+</html>
