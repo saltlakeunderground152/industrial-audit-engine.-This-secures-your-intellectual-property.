@@ -17,6 +17,7 @@ import json
 import time
 from datetime import datetime
 from typing import Dict, Any, List
+from fastapifrom fastapi.responses import HTMLResponse
 
 # ========================================================================================
 # 1. INFRASTRUCTURE & ENGINE DEPENDENCIES
@@ -214,4 +215,8 @@ if __name__ == "__main__":
         import uvicorn
         port = int(os.environ.get("PORT", 8000))
         uvicorn.run("industrial_app:app", host="0.0.0.0", port=port)
+        @app.get("/", response_class=HTMLResponse)  
+        async def read_dashboard():
+        with open("index.html", "r") as f:
+                 return f.read()
 
