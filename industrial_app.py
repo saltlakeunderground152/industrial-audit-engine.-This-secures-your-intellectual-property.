@@ -210,8 +210,7 @@ def run_cli():
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] in ["list", "inspect", "release_payout"]:
         run_cli()
-    else:
-        import os
+    import os
 import uvicorn
 from fastapi.responses import HTMLResponse
 
@@ -225,5 +224,6 @@ async def read_dashboard():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("industrial_app:app", host="0.0.0.0", port=port)
+
 
 
