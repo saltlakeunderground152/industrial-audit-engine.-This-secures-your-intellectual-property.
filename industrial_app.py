@@ -212,11 +212,18 @@ if __name__ == "__main__":
         run_cli()
     else:
         import os
-        import uvicorn
-        port = int(os.environ.get("PORT", 8000))
-        uvicorn.run("industrial_app:app", host="0.0.0.0", port=port)
-        @app.get("/", response_class=HTMLResponse)  
-        async def read_dashboard():
-        with open("index.html", "r") as f:
-                 return f.read()
+import uvicorn
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
+async def read_dashboard():
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    html_path = os.path.join(current_dir, "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run("industrial_app:app", host="0.0.0.0", port=port)
+
 
