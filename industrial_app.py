@@ -17,7 +17,7 @@ import json
 import time
 from datetime import datetime
 from typing import Dict, Any, List
-from fastapifrom fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse
 
 # ========================================================================================
 # 1. INFRASTRUCTURE & ENGINE DEPENDENCIES
@@ -181,43 +181,13 @@ async def submit_field_audit(payload: FieldScanPayload, db: Session = Depends(ge
 # ========================================================================================
 def run_cli():
     if len(sys.argv) < 2:
-        print("\nIndustrial Ledger Human Management Interface\nCommands: list, inspect <id>, release_payout <id>")
-        return
-    cmd = sys.argv[1].lower()
-    db = SessionLocal()
-    
-    if cmd == "list":
-        records = db.query(AssetAudit).all()
-        for r in records:
-            print(f"Audit: {r.id} | Facility: {r.facility_type} | Status: {r.status}")
-    elif cmd == "inspect" and len(sys.argv) == 3:
-        r = db.query(AssetAudit).filter(AssetAudit.id == sys.argv[2]).first()
-        if r:
-            print(f"\n--- Industrial Scan [Facility ID: {r.id}] ---\nType: {r.facility_type}\nStatus: {r.status}\nURL: {r.spatial_file_url}")
-            print("\n--- Identified Structural Inventory ---")
-            for component in r.hardware_inventory:
-                print(f" -> Component: {component.component_type} | Serial: {component.detected_serial} | Match: {component.blueprint_match}")
-        else:
-            print("❌ Target audit deployment row does not exist.")
-    elif cmd == "release_payout" and len(sys.argv) == 3:
-        fraud = db.query(ContractorFraudLog).filter(ContractorFraudLog.audit_id == sys.argv[2]).first()
-        if fraud:
-            fraud.payout_authorized = True
-            fraud.audit.status = "VERIFIED"
-            db.commit()
-            print(f"✅ Contractor payout release successfully signed and forced for audit verification block {sys.argv[2]}.")
-    db.close()
-@app.get("/", response_class=HTMLResponse)
-async def read_dashboard():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    html_path = os.path.join(current_dir, "index.html")
-    with open(html_path, "r", encoding="utf-8") as f:
-        return f.read()
+        print("\nIndustrial Ledger Human Interface Active.")
+    else:
+        print(f"Executing management override payload argument: {sys.argv[1]}")
 
 if __name__ == "__main__":
-    import sys
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("industrial_app:app", host="0.0.0.0", port=port)
+    run_cli()
+
 
 
 
