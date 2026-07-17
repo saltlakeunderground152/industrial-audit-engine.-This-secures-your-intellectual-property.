@@ -76,6 +76,15 @@ class ContractorFraudLog(Base):
     audit_trail_hash = Column(String, nullable=False)
 
     audit = relationship("AssetAudit", back_populates="contractor_verification")
+class GatewayRejectionLedger(Base):
+    __tablename__ = "gateway_rejection_ledger"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    isolation_timestamp = Column(String, nullable=False)
+    target_node_id = Column(String, index=True)
+    perimeter_rule_triggered = Column(String)
+    system_status = Column(String, default="ANOMALY_ISOLATED")
+    raw_payload_string = Column(String, nullable=False)
 
 def init_db():
     Base.metadata.create_all(bind=engine)
